@@ -22,14 +22,11 @@ int test_case[5][10] = {
     {92, 88, 84, 81, 99, 86, 83, 80, 95, 98},           // Alert Level 3
     {-5, 2, -8, -3, 7, -15, -9, -2, 6, -11},            // Unhealthy
     {110, 120, 105, 130, 115, 125, 105, 135, 140, 130}  // Unhealthy    
-}
+};
 
-char topics[4][30] = {
-    "handong/ANH/313",
-    "handong/NTH/311",
-    "admin/alerts",
-    "admin/logs"
-}
+char topic[30] = "handong/NTH/313";
+char admin_alerts[30] = "admin/alerts";
+char admin_logs[30] = "admin/logs";
 
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
@@ -58,12 +55,17 @@ void on_publish(struct mosquitto *mosq, void *obj, int mid)
 }
 
 
+int get_temperature(void)
+{
+    return random()%100;
+}
+
 int get_decibel(void)
 {
     return random()%100;
 }
 
-float cal_avg_decibel(bool test, int case_num=0) {
+float cal_avg_decibel(bool test, int case_num) {
     int curr_decibel = 0;
     float avg_decibel = 0.0;
 
@@ -99,15 +101,14 @@ int cal_alert_level(float avg_decibel) {
 void get_timestamp(char* timestamp) {
     time_t rawtime;
     struct tm *timeinfo;
-    char timestamp[13]; // "yymmddhhmmss"에 해당하는 12자리 타임스탬프 + 널 종료 문자('\0')를 위한 공간
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
 
     // 타임스탬프 문자열 형식 지정
-    strftime(timestamp, sizeof(timestamp), "%y%m%d%H%M%S", timeinfo);
+    strftime(timestamp, 13, "%y%m%d%H%M%S", timeinfo);
 
-    printf("Timestamp: %s\n", timestamp);
+    // printf("Timestamp: %s\n", timestamp);
 }
 
 int get_health_status(float avg_decibel) {
@@ -117,50 +118,40 @@ int get_health_status(float avg_decibel) {
         return 0; // healthy
 }
 
-void make_packet(char* buffer, int noise_level, float avg_decibel) {
-    char timestamp[13];
+void make_packet(char* buffer, float avg_decibel, int noise_level) {
+    char timestamp[13];         // "yymmddhhmmss"에 해당하는 12자리 타임스탬프 + 널 종료 문자('\0')를 위한 공간
     get_timestamp(timestamp);
     
     int health_status = get_health_status(avg_decibel);
 
-    sprintf("%s,%s,%s,%s,%d,%f,%d", institution, location, room, timestamp, noise_level, avg_decibel, health_status);
+    sprintf(buffer, "%s,%s,%s,%s,%d,%f,%d", institution, location, room, timestamp, noise_level, avg_decibel, health_status);
+    printf("%s\n", buffer);
 }
 
-
-/* This function pretends to read some data from a sensor and publish it.*/
-void publish_sensor_data(struct mosquitto *mosq)
-{
-    // char topics[3][30] = {"gh/temperature1", "gh/temperature2", "gh/temperature3"};
-    char payload[100];
-    int temp;
+void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level) {
     int rc;
-    int i; 
 
-    sleep(1);   /* Prevent a storm of messages - this pretend sensor works at 1Hz */
-
-    // Publish three topics
-    for (i = 0; i < 3; i++)
-    {
-        /* Get our pretend data */
-        temp = get_temperature();
-        /* Print it to a string for easy human reading - payload format is highly
-        * application dependent. */
-        snprintf(payload, sizeof(payload), "%d", temp);
-
-        /* Publish the message
-        * mosq - our client instance
-        * *mid = NULL - we don't want to know what the message id for this message is
-        * topic = "example/temperature" - the topic on which this message will be published
-        * payloadlen = strlen(payload) - the length of our payload in bytes
-        * payload - the actual payload
-        * qos = 2 - publish with QoS 2 for this example
-        * retain = false - do not use the retained message feature for this message
-        */
-        rc = mosquitto_publish(mosq, NULL, topics[i], strlen(payload), payload, 2, false);
+    // if the range of decibel is normal, publish data to the topic
+    if(noise_level == -1) {
+        rc = mosquitto_publish(mosq, NULL, topic, strlen(buffer), buffer, 2, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
         }
     }
+    // if the range of decibel is unnormal, publish data to admin/alerts
+    else {
+        rc = mosquitto_publish(mosq, NULL, admin_alerts, strlen(buffer), buffer, 2, false);
+        if(rc != MOSQ_ERR_SUCCESS){
+            fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+        }
+    }
+    /*
+    // publish logs to admin/logs
+    rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 2, false);
+    if(rc != MOSQ_ERR_SUCCESS){
+        fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+    }
+    */
 }
 
 
@@ -170,6 +161,7 @@ int main(int argc, char *argv[])
     int rc;
 
     float avg_decibel = 0.0;
+    int noise_level = 0;
     char buffer[1024];
 
     /* Required before calling other mosquitto functions */
@@ -216,17 +208,16 @@ int main(int argc, char *argv[])
      * the connect callback.
      * In this case we know it is 1 second before we start publishing.
      */
-    // while(1){
-    //  publish_sensor_data(mosq);
-    // }
 
     // test case 
     for(int i=0; i<5; i++) {
         avg_decibel = cal_avg_decibel(true, i);
+        noise_level = cal_alert_level(avg_decibel);
+        make_packet(buffer, avg_decibel, noise_level);
+        publish_decibel_data(mosq, buffer, noise_level);
     }
 
+    // mosquitto_lib_cleanup();
 
-
-    mosquitto_lib_cleanup();
     return 0;
 }
