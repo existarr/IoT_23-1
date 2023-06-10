@@ -53,7 +53,7 @@ void on_publish(struct mosquitto *mosq, void *obj, int mid)
 
 int get_decibel(void)
 {
-    return random()%100;
+    return random()%100 + 1;
 }
 
 float cal_avg_decibel(bool test, int case_num) {
@@ -123,7 +123,7 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
     int rc;
 
     // if the range of decibel is normal, publish data to the topic
-    if(noise_level == -1) {
+    if(noise_level != -1) {
         rc = mosquitto_publish(mosq, NULL, topic, strlen(buffer), buffer, 1, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
