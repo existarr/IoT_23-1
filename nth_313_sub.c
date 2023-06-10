@@ -17,7 +17,7 @@
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
 	// TODO
-	char *const topics = "handong/NTH/311";
+	char *const topics = "handong/NTH/313";
 	int rc;
 
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
@@ -67,26 +67,26 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 /* Callback called when the client receives a message. */
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
-	char *tokens[MAX_TOKEN];
-	int index = 0;
+	// char *tokens[MAX_TOKEN];
+	// int index = 0;
 
-	char *token = strtok((char *)msg->payload, ",");
-	while (token != NULL & index < MAX_TOKEN){
-		tokens[index] = token;
-		index++;
-		token = strtok((char *)msg->payload, ",");
-	}
+	// char *token = strtok((char *)msg->payload, ",");
+	// while (token != NULL & index < MAX_TOKEN){
+	// 	tokens[index] = token;
+	// 	index++;
+	// 	token = strtok((char *)msg->payload, ",");
+	// }
 
-	int level = atoi(tokens[4]);
-	int decibel = atoi(tokens[5]);
+	// int level = atoi(tokens[4]);
+	// int decibel = atoi(tokens[5]);
 
-	if(level == 1 && decibel <= 50){
-		printf("level 1 - %d\n", decibel);
-	} else if (level == 2 && decibel > 50 && decibel <= 80){
-		printf("level 2 - %d\n", decibel);
-	} else if (level == 3 && decibel > 80 && decibel <= 100){
-		printf("level 3 - %d\n", decibel);
-	}
+	// if(level == 1 && decibel <= 50){
+	// 	printf("level 1 - %d\n", decibel);
+	// } else if (level == 2 && decibel > 50 && decibel <= 80){
+	// 	printf("level 2 - %d\n", decibel);
+	// } else if (level == 3 && decibel > 80 && decibel <= 100){
+	// 	printf("level 3 - %d\n", decibel);
+	// }
 
 	// int decibel = atoi((char *)msg->payload);
 	// if(decibel < 50){
@@ -94,7 +94,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 	// } else {
 	// 	printf("alert - %d\n", decibel);
 	// }
-	// printf("%s %d %s\n", msg->topic, msg->qos, (char *)msg->payload);
+	printf("%s %d %s\n", msg->topic, msg->qos, (char *)msg->payload);
 }
 
 

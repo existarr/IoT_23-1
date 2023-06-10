@@ -63,7 +63,7 @@ float cal_avg_decibel(bool test, int case_num) {
     if(test) {
         for(int i=0; i<10; i++) {
             avg_decibel += test_case[case_num][i];
-            usleep(30000); // sleep during 0.3 sec
+            usleep(300000); // sleep during 0.3 sec
         }
     }
     else {
@@ -123,7 +123,7 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
     int rc;
 
     // if the range of decibel is normal, publish data to the topic
-    if(noise_level == -1) {
+    if(noise_level != -1) {
         rc = mosquitto_publish(mosq, NULL, topic, strlen(buffer), buffer, 1, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
