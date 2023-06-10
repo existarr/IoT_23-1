@@ -1,7 +1,3 @@
-/*
- * This example shows how to publish messages from outside of the Mosquitto network loop.
- */
-
 #include <mosquitto.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,11 +50,6 @@ void on_publish(struct mosquitto *mosq, void *obj, int mid)
     printf("Message with mid %d has been published.\n", mid);
 }
 
-
-int get_temperature(void)
-{
-    return random()%100;
-}
 
 int get_decibel(void)
 {
@@ -133,21 +124,21 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
 
     // if the range of decibel is normal, publish data to the topic
     if(noise_level == -1) {
-        rc = mosquitto_publish(mosq, NULL, topic, strlen(buffer), buffer, 2, false);
+        rc = mosquitto_publish(mosq, NULL, topic, strlen(buffer), buffer, 1, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
         }
     }
     // if the range of decibel is unnormal, publish data to admin/alerts
     else {
-        rc = mosquitto_publish(mosq, NULL, admin_alerts, strlen(buffer), buffer, 2, false);
+        rc = mosquitto_publish(mosq, NULL, admin_alerts, strlen(buffer), buffer, 1, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
         }
     }
     /*
     // publish logs to admin/logs
-    rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 2, false);
+    rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 1, false);
     if(rc != MOSQ_ERR_SUCCESS){
         fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
     }
