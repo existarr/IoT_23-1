@@ -1,3 +1,21 @@
+/*
+ * Author: Gahyeon Shim
+ * 
+ * This program is the publisher of Noise Warning Program. 
+ * It measures the noise level every second, and calculates the average noise level every 10 seconds.
+ * If the noise level exceeds a predefined threshold, it sends an noise warning to the subscribers of the coressponding location topic.
+ * 
+ * The normal range of noise value is from 1 to 100.
+ * The range of the noise level as follows:
+ *      if avg_decibel >  0 && avg_decibel <=  50 --> Warning Level 1 
+ *      if avg_decibel > 50 && avg_decibel <=  80 --> Warning Level 2
+ *      if avg_decibel > 80 && avg_decibel <= 100 --> Warning Level 3
+ *      if avg_decibel <= 0 || avg_decibel >  100 --> There is an issue with the sound sensor
+ * 
+ * If the average of noise value is outside the normal range, this event will be published to the 'admin/alerts' topic.
+ * Also, all data transmission logs are published to the 'admin/logs' topic.
+*/
+
 #include <mosquitto.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +31,9 @@ char location[10] = "NTH";
 char room[10] = "313";
 
 int test_case[5][10] = {
-    {10, 23, 5, 50, 1, 17, 40, 32, 8, 12},              // Alert Level 1
-    {72, 66, 78, 55, 67, 59, 61, 53, 70, 50},           // Alert Level 2
-    {92, 88, 84, 81, 99, 86, 83, 80, 95, 98},           // Alert Level 3
+    {10, 23, 5, 50, 1, 17, 40, 32, 8, 12},              // Warning Level 1 
+    {72, 66, 78, 55, 67, 59, 61, 53, 70, 50},           // Warning Level 2
+    {92, 88, 84, 81, 99, 86, 83, 80, 95, 98},           // Warning Level 3
     {-5, 2, -8, -3, 7, -15, -9, -2, 6, -11},            // Unhealthy
     {110, 120, 105, 130, 115, 125, 105, 135, 140, 130}  // Unhealthy    
 };
@@ -24,38 +42,47 @@ char topic[30] = "handong/NTH/313";
 char admin_alerts[30] = "admin/alerts";
 char admin_logs[30] = "admin/logs";
 
+
+/*
+ * This function is implemented based on the 'multiple_pub.c' from Lab08.
+ * 
+ * It prints out the connection result. 
+ * If the connection fails for any reason, try to connect until connecting with the broker. (will be implemented later)
+*/
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
-    /* Print out the connection result. mosquitto_connack_string() produces an
-     * appropriate string for MQTT v3.x clients, the equivalent for MQTT v5.0
-     * clients is mosquitto_reason_string().
-     */
     printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
     if(reason_code != 0){
-        /* If the connection fails for any reason, we don't want to keep on
-         * retrying in this example, so disconnect. Without this, the client
-         * will attempt to reconnect. */
         mosquitto_disconnect(mosq);
     }
 }
 
 
-/* Callback called when the client knows to the best of its abilities that a
- * PUBLISH has been successfully sent. For QoS 0 this means the message has
- * been completely written to the operating system. For QoS 1 this means we
- * have received a PUBACK from the broker. For QoS 2 this means we have
- * received a PUBCOMP from the broker. */
+/*
+ * This function is implemented based on the 'multiple_pub.c' from Lab08.
+ * 
+ *  Callback called when the client knows to the best of its abilities that a PUBLISH has been successfully sent.
+*/
 void on_publish(struct mosquitto *mosq, void *obj, int mid)
 {
     printf("Message with mid %d has been published.\n", mid);
 }
 
 
+/*
+ * This function returns the random value of noise (1-100)
+*/
 int get_decibel(void)
 {
-    return random()%100;
+    return random()%100 + 1;
 }
 
+
+/*
+ * This function calculates the average noise value.
+ * If the parameter "test" is true and case_num, it will calculate the average with the given test case.
+ * Else, it will calculate it with the random noise value returned by get_decibel().
+*/
 float cal_avg_decibel(bool test, int case_num) {
     int curr_decibel = 0;
     float avg_decibel = 0.0;
@@ -63,7 +90,7 @@ float cal_avg_decibel(bool test, int case_num) {
     if(test) {
         for(int i=0; i<10; i++) {
             avg_decibel += test_case[case_num][i];
-            usleep(300000); // sleep during 0.3 sec
+            usleep(500000); // sleep during 0.5 sec
         }
     }
     else {
@@ -78,17 +105,31 @@ float cal_avg_decibel(bool test, int case_num) {
     return avg_decibel;
 }
 
+
+/*
+ * This function returns the noise level.
+ * The range of the noise level as follows:
+ *      if avg_decibel >  0 && avg_decibel <=  50 --> Warning Level 1 
+ *      if avg_decibel > 50 && avg_decibel <=  80 --> Warning Level 2
+ *      if avg_decibel > 80 && avg_decibel <= 100 --> Warning Level 3
+ *      if avg_decibel <= 0 || avg_decibel >  100 --> There is an issue with the sound sensor. Reoprt to 'admin/alerts'
+*/
 int cal_alert_level(float avg_decibel) {
-    if(avg_decibel > 0 && avg_decibel <= 50) 
+    if(avg_decibel > 0 && avg_decibel <= 50)        // Warning Level 1
         return 1;
-    else if(avg_decibel > 50 && avg_decibel <= 80)
+    else if(avg_decibel > 50 && avg_decibel <= 80)  // Warning Level 1
         return 2;
-    else if(avg_decibel > 80 && avg_decibel <= 100)
+    else if(avg_decibel > 80 && avg_decibel <= 100) // Warning Level 1
         return 3;
-    else 
+    else                                            // Unhealthy Sensor 
         return -1;
 }
 
+
+/*
+ * This function returns the timestamp to string.
+ * The format of timestamp is 'YYMMDDHHMMSS'.
+*/
 void get_timestamp(char* timestamp) {
     time_t rawtime;
     struct tm *timeinfo;
@@ -96,19 +137,35 @@ void get_timestamp(char* timestamp) {
     time(&rawtime);
     timeinfo = localtime(&rawtime);
 
-    // 타임스탬프 문자열 형식 지정
     strftime(timestamp, 13, "%y%m%d%H%M%S", timeinfo);
-
-    // printf("Timestamp: %s\n", timestamp);
 }
 
+
+/*
+ * This function returns the status of sound sensor.
+ * If the value of avg_deciel is bigger than 0 and less equal than 100, the status is healthy (1).
+ * Else, the status is unhealthy (0).
+*/
 int get_health_status(float avg_decibel) {
     if(avg_decibel > 0 && avg_decibel <= 100) 
-        return 1; // unhealthy
+        return 1; // healthy
     else    
-        return 0; // healthy
+        return 0; // unhealthy
 }
 
+
+/*
+ * This function makes the packet to publish.
+ * The format of packet is as follows :
+ *    institution[10],
+ *    location[10],
+ *    room[10],
+ *    timestamp[13],
+ *    noise_level[2],
+ *    avg_decibel[10],
+ *    health_status[1]
+ * The data in the packet is separated by commas.
+*/
 void make_packet(char* buffer, float avg_decibel, int noise_level) {
     char timestamp[13];         // "yymmddhhmmss"에 해당하는 12자리 타임스탬프 + 널 종료 문자('\0')를 위한 공간
     get_timestamp(timestamp);
@@ -119,6 +176,12 @@ void make_packet(char* buffer, float avg_decibel, int noise_level) {
     printf("%s\n", buffer);
 }
 
+
+/*
+ * This function published the packet to subscribers.
+ * If the noise_level is normal(the case of sensor is unhealthy), the packet will be published to the given topic.
+ * Else unnormal, it will be published to the 'admin/alerts' topic to report this issue to administrator. 
+*/
 void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level) {
     int rc;
 
@@ -173,7 +236,7 @@ int main(int argc, char *argv[])
     mosquitto_connect_callback_set(mosq, on_connect);
     mosquitto_publish_callback_set(mosq, on_publish);
 
-    /* Connect to test.mosquitto.org on port 1883, with a keepalive of 60 seconds.
+    /* Connect to host(broker) on port 1883, with a keepalive of 60 seconds.
      * This call makes the socket connection only, it does not complete the MQTT
      * CONNECT/CONNACK flow, you should use mosquitto_loop_start() or
      * mosquitto_loop_forever() for processing net traffic. */
@@ -192,14 +255,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* At this point the client is connected to the network socket, but may not
-     * have completed CONNECT/CONNACK.
-     * It is fairly safe to start queuing messages at this point, but if you
-     * want to be really sure you should wait until after a successful call to
-     * the connect callback.
-     * In this case we know it is 1 second before we start publishing.
-     */
-
     // test case 
     for(int i=0; i<5; i++) {
         avg_decibel = cal_avg_decibel(true, i);
@@ -208,7 +263,15 @@ int main(int argc, char *argv[])
         publish_decibel_data(mosq, buffer, noise_level);
     }
 
-    // mosquitto_lib_cleanup();
+    // continue to measure noise
+    while(true) {
+        avg_decibel = cal_avg_decibel(false, -1);
+        noise_level = cal_alert_level(avg_decibel);
+        make_packet(buffer, avg_decibel, noise_level);
+        publish_decibel_data(mosq, buffer, noise_level);
+    }
+
+    mosquitto_lib_cleanup();
 
     return 0;
 }
