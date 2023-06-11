@@ -95,7 +95,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 	}
 
 	//should I make a function?
-	char *const log_topic = "admin/log";
+	char *const log_topic = "admin/log/sub";
 	int log_rc;
 	log_rc = mosquitto_publish(mosq, NULL, log_topic, strlen((char *)msg->payload), (char *)msg->payload, 1, false);
         if(log_rc != MOSQ_ERR_SUCCESS){

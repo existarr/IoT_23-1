@@ -25,7 +25,7 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 		mosquitto_disconnect(mosq);
 	}
 
-	rc = mosquitto_subscribe_multiple(mosq, NULL, 3, topics, 1, 0, NULL);
+	rc = mosquitto_subscribe_multiple(mosq, NULL, 2, topics, 1, 0, NULL);
 	if(rc != MOSQ_ERR_SUCCESS){
 		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
 		mosquitto_disconnect(mosq);
