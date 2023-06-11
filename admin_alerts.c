@@ -13,14 +13,13 @@
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
-char *const sub_topic = "handong/NTH/313";
-char *const log_topic = "admin/log/sub";
+char *const topic = "admin/alerts";
 
 /* Callback called when the client receives a CONNACK message from the broker. */
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
 	// TODO
-	int sub_rc;
+	int rc;
 
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
 	if(reason_code != 0){
@@ -32,19 +31,14 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 	// 	fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
 	// 	mosquitto_disconnect(mosq);
 	// }
-	sub_rc = mosquitto_subscribe(mosq, NULL, sub_topic, 1);
-	if(sub_rc != MOSQ_ERR_SUCCESS){
-		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(sub_rc));
+	rc = mosquitto_subscribe(mosq, NULL, topic, 1);
+	if(rc != MOSQ_ERR_SUCCESS){
+		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
 		/* We might as well disconnect if we were unable to subscribe */
 		mosquitto_disconnect(mosq);
 	}
 
 }
-
-// void on_publish(struct mosquitto *mosq, void *obj, int mid)
-// {
-//     printf("log message has been sent.\n");
-// }
 
 
 /* Callback called when the broker sends a SUBACK in response to a SUBSCRIBE. */
@@ -74,14 +68,7 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 /* Callback called when the client receives a message. */
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
-	//should I make a function?
-	int log_rc;
-	log_rc = mosquitto_publish(mosq, NULL, log_topic, strlen((char *)msg->payload), (char *)msg->payload, 1, false);
-        if(log_rc != MOSQ_ERR_SUCCESS){
-            fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(log_rc));
-        }
-
-	char *tokens[MAX_TOKEN];
+    char *tokens[MAX_TOKEN];
 	int index = 0;
 
 	char *token = strtok((char *)msg->payload, ",");
@@ -91,25 +78,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 		index++;
 		token = strtok(NULL, ",");
 	}
-
-	int level = atoi(tokens[4]);
-	int decibel = atoi(tokens[5]);
-
-	if(level == 1 && decibel <= 50){
-		printf("level 1 - %d\n", decibel);
-	} else if (level == 2 && decibel > 50 && decibel <= 80){
-		printf("level 2 - %d\n", decibel);
-	} else if (level == 3 && decibel > 80 && decibel <= 100){
-		printf("level 3 - %d\n", decibel);
-	}
-
-	// int decibel = atoi((char *)msg->payload);
-	// if(decibel < 50){
-	// 	printf("okay - %d\n", decibel);
-	// } else {
-	// 	printf("alert - %d\n", decibel);
-	// }
-	// printf("%s %d %s\n", msg->topic, msg->qos, (char *)msg->payload);
+	printf("[%s/%s/%s] health check required\n", tokens[0], tokens[1], tokens[2]);
 }
 
 
@@ -134,7 +103,6 @@ int main(int argc, char *argv[])
 
 	/* Configure callbacks. This should be done before connecting ideally. */
 	mosquitto_connect_callback_set(mosq, on_connect);
-	// mosquitto_publish_callback_set(mosq, on_publish);
 	mosquitto_subscribe_callback_set(mosq, on_subscribe);
 	mosquitto_message_callback_set(mosq, on_message);
 

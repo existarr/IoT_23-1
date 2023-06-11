@@ -13,11 +13,12 @@
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
+char *const topics[] = {"admin/log/sub", "admin/log/pub"};
+
 /* Callback called when the client receives a CONNACK message from the broker. */
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
 	// TODO
-	char *const topics[] = {"admin/log/sub", "admin/log/pub"};
 	int rc;
 
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
@@ -67,18 +68,17 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 /* Callback called when the client receives a message. */
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
-	// char *tokens[MAX_TOKEN];
-	// int index = 0;
+	char *tokens[MAX_TOKEN];
+	int index = 0;
 
-	// char *token = strtok((char *)msg->payload, ",");
-	// while (token != NULL & index < MAX_TOKEN){
-	// 	tokens[index] = token;
-	// 	index++;
-	// 	token = strtok(NULL, ",");
-	// }
+	char *token = strtok((char *)msg->payload, ",");
+	while (token != NULL & index < MAX_TOKEN){
+		tokens[index] = token;
+		index++;
+		token = strtok(NULL, ",");
+	}
     
-	// printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
-    printf("%s\n", (char *)msg->payload);
+	printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
 }
 
 

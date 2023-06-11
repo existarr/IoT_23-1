@@ -40,7 +40,7 @@ int test_case[5][10] = {
 
 char topic[30] = "handong/NTH/313";
 char admin_alerts[30] = "admin/alerts";
-char admin_logs[30] = "admin/logs";
+char admin_logs[30] = "admin/log/pub";
 
 
 /*
@@ -199,13 +199,12 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
         }
     }
-    /*
+    
     // publish logs to admin/logs
     rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 1, false);
     if(rc != MOSQ_ERR_SUCCESS){
         fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
     }
-    */
 }
 
 
