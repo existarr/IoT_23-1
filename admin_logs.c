@@ -1,7 +1,9 @@
 /*
- * This example shows how to write a client that subscribes to a topic and does
- * not do anything other than handle the messages that are received.
- */
+ * Author: Chang Yu Jin
+ * 
+ * This program is the log record of Noise Warning Program. 
+ * It receives log messages from publishers and subscribers of the program about their actions.
+*/
 
 #include <mosquitto.h>
 #include <stdio.h>
@@ -13,12 +15,17 @@
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
-char *const topics[] = {"admin/log/sub", "admin/log/pub"};
+//log topics (distinguish between publish messages from subscriber and publisher in a location)
+char *const topics[] = {"admin/logs/sub", "admin/logs/pub"};
 
-/* Callback called when the client receives a CONNACK message from the broker. */
+/*
+ * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * 
+ * It prints out the connection result.
+ * If unable to subscribe, disconnect from the broker.
+*/
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
-	// TODO
 	int rc;
 
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
@@ -26,22 +33,19 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 		mosquitto_disconnect(mosq);
 	}
 
+	//if unable to subscribe, disconnect from the broker
 	rc = mosquitto_subscribe_multiple(mosq, NULL, 2, topics, 1, 0, NULL);
 	if(rc != MOSQ_ERR_SUCCESS){
 		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
 		mosquitto_disconnect(mosq);
 	}
-	// rc = mosquitto_subscribe(mosq, NULL, topics, 1);
-	// if(rc != MOSQ_ERR_SUCCESS){
-	// 	fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
-	// 	/* We might as well disconnect if we were unable to subscribe */
-	// 	mosquitto_disconnect(mosq);
-	// }
-
 }
 
 
-/* Callback called when the broker sends a SUBACK in response to a SUBSCRIBE. */
+/*
+ * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * Callback called when the broker sends a SUBACK in response to a SUBSCRIBE.
+*/
 void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos)
 {
 	int i;
@@ -65,12 +69,20 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 }
 
 
-/* Callback called when the client receives a message. */
+/*
+ * This function deals with the process after a message (for logs) has been received.
+ * Callback called when the client receives a message.
+ * 
+ * After receiving a publish message from either publisher or subscriber, it separates each piece of information by using delimeter (,).
+ * It puts each piece into tokens array in order.
+ * It prints a log message.
+*/
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
 	char *tokens[MAX_TOKEN];
 	int index = 0;
 
+	//each piece extracted with the delimeter
 	char *token = strtok((char *)msg->payload, ",");
 	while (token != NULL & index < MAX_TOKEN){
 		tokens[index] = token;
@@ -78,6 +90,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 		token = strtok(NULL, ",");
 	}
     
+	//print out the log message
 	printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
 }
 

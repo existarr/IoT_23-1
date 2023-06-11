@@ -1,7 +1,18 @@
 /*
- * This example shows how to write a client that subscribes to a topic and does
- * not do anything other than handle the messages that are received.
- */
+ * Author: Chang Yu Jin
+ * 
+ * This program is the subscriber of Noise Warning Program. 
+ * It receives a message from a publisher in the same location as the subscriber.
+ * The message contains information about noise in the location of the subscriber.
+ * It alerts a warning level of noise with the value measured in decibel.
+ * 
+ * dB range:
+ * 		0 ~ 50 dB		- warning level 1
+ * 		51 ~ 80 dB		- warning level 2
+ * 		81 ~ 100 dB		- warning level 3
+ * 
+ * Also, all data transmission logs are published to the 'admin/logs/sub' topic.
+*/
 
 #include <mosquitto.h>
 #include <stdio.h>
@@ -13,13 +24,17 @@
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
-char *const sub_topic = "handong/NTH/313";
-char *const log_topic = "admin/log/sub";
+char *const sub_topic = "handong/NTH/313";	//location topic	- subscribe
+char *const log_topic = "admin/logs/sub";	//log topic			- publish
 
-/* Callback called when the client receives a CONNACK message from the broker. */
+/*
+ * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * 
+ * It prints out the connection result.
+ * If unable to subscribe, disconnect from the broker.
+*/
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
-	// TODO
 	int sub_rc;
 
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
@@ -27,27 +42,20 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 		mosquitto_disconnect(mosq);
 	}
 
-	// rc = mosquitto_subscribe_multiple(mosq, NULL, 3, topics, 1, 0, NULL);
-	// if(rc != MOSQ_ERR_SUCCESS){
-	// 	fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
-	// 	mosquitto_disconnect(mosq);
-	// }
+	//if unable to subscribe, disconnect from the broker
 	sub_rc = mosquitto_subscribe(mosq, NULL, sub_topic, 1);
 	if(sub_rc != MOSQ_ERR_SUCCESS){
 		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(sub_rc));
-		/* We might as well disconnect if we were unable to subscribe */
 		mosquitto_disconnect(mosq);
 	}
 
 }
 
-// void on_publish(struct mosquitto *mosq, void *obj, int mid)
-// {
-//     printf("log message has been sent.\n");
-// }
 
-
-/* Callback called when the broker sends a SUBACK in response to a SUBSCRIBE. */
+/*
+ * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * Callback called when the broker sends a SUBACK in response to a SUBSCRIBE.
+*/
 void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos)
 {
 	int i;
@@ -71,45 +79,52 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 }
 
 
-/* Callback called when the client receives a message. */
+/*
+ * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * Callback called when the client receives a message.
+ * 
+ * It publishes a log message to the "admin/logs/sub" topic.
+ * 
+ * After receiving a message from a publisher, it separates each piece of information by using delimeter (,).
+ * It puts each piece into tokens array in order.
+ * It converts decibel and level into integer type.
+ * It checks whether the level and the decibel value match (just in case)
+ * It prints the level and the decibel value.
+*/
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
-	//should I make a function?
+
+	//publish log message to the "admin/logs/sub" topic
 	int log_rc;
 	log_rc = mosquitto_publish(mosq, NULL, log_topic, strlen((char *)msg->payload), (char *)msg->payload, 1, false);
         if(log_rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(log_rc));
         }
 
+	//get each piece of information
 	char *tokens[MAX_TOKEN];
 	int index = 0;
 
+	//each piece extracted with the delimeter
 	char *token = strtok((char *)msg->payload, ",");
 	while (token != NULL & index < MAX_TOKEN){
 		tokens[index] = token;
-		// printf("%d - %s", index, tokens[index]);
 		index++;
 		token = strtok(NULL, ",");
 	}
 
+	//conversion to integer type for the warning level and decibel
 	int level = atoi(tokens[4]);
 	int decibel = atoi(tokens[5]);
 
+	//check if the noise measured in dB is assigned to a corresponding warning level and print the result
 	if(level == 1 && decibel <= 50){
-		printf("level 1 - %d\n", decibel);
+		printf("level 1 - %d dB\n", decibel);
 	} else if (level == 2 && decibel > 50 && decibel <= 80){
-		printf("level 2 - %d\n", decibel);
+		printf("level 2 - %d dB\n", decibel);
 	} else if (level == 3 && decibel > 80 && decibel <= 100){
-		printf("level 3 - %d\n", decibel);
+		printf("level 3 - %d dB\n", decibel);
 	}
-
-	// int decibel = atoi((char *)msg->payload);
-	// if(decibel < 50){
-	// 	printf("okay - %d\n", decibel);
-	// } else {
-	// 	printf("alert - %d\n", decibel);
-	// }
-	// printf("%s %d %s\n", msg->topic, msg->qos, (char *)msg->payload);
 }
 
 

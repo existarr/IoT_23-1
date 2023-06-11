@@ -13,7 +13,7 @@
  *      if avg_decibel <= 0 || avg_decibel >  100 --> There is an issue with the sound sensor
  * 
  * If the average of noise value is outside the normal range, this event will be published to the 'admin/alerts' topic.
- * Also, all data transmission logs are published to the 'admin/logs' topic.
+ * Also, all data transmission logs are published to the 'admin/logs/pub' topic.
 */
 
 #include <mosquitto.h>
@@ -40,7 +40,7 @@ int test_case[5][10] = {
 
 char topic[30] = "handong/NTH/313";
 char admin_alerts[30] = "admin/alerts";
-char admin_logs[30] = "admin/log/pub";
+char admin_logs[30] = "admin/logs/pub";
 
 
 /*
