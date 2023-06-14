@@ -17,7 +17,7 @@
 #define MAX_TOKEN	7
 
 #define FIREBASE_PROJECT_ID "moappfinal-bbff1"
-#define FIREBASE_API_KEY "AIzaSyCa5MueZF9nSREtn4Ekq3O0rExbxjUiZBA"
+#define FIREBASE_API_KEY "4454520aa2f26ed2337ed95ff30f99bfbb4bfba2"
 #define FIREBASE_COLLECTION "logs"
 
 //log topics (distinguish between publish messages from subscriber and publisher in a location)
