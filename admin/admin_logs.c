@@ -80,9 +80,8 @@ void store_log(const char *tokens[]){
 
 		curl_easy_cleanup(curl);
 	}
-
-	curl_global_cleanup();
 	
+	curl_global_cleanup();
 }
 
 /*
