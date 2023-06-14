@@ -35,7 +35,7 @@ void store_log(const char *tokens[]){
 	char response[4096];
 	char fields[7][30] = {"institution", "location", "room", "timestamp", "level", "decibel", "status"};
 
-	snprintf(url, sizeof(url), "https://firestore.googleapis.com/v1/projects/%s/database/(default)/documents/%s", FIREBASE_PROJECT_ID, FIREBASE_COLLECTION);
+	snprintf(url, sizeof(url), "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/%s", FIREBASE_PROJECT_ID, FIREBASE_COLLECTION);
 	
 	strcpy(request, "{");
 	for(int i=0; i<7; i++){
