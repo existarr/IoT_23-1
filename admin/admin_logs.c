@@ -10,13 +10,67 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <curl/curl.h>
 
 #define MQTT_HOST 	"127.0.0.1" 
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
+#define FIREBASE_URL "https://moappfinal-bbff1.firebaseio.com/"
+#define FIREBASE_API_KEY "AIzaSyCa5MueZF9nSREtn4Ekq3O0rExbxjUiZBA"
+#define FIREBASE_COLLECTION "logs"
+
 //log topics (distinguish between publish messages from subscriber and publisher in a location)
 char *const topics[] = {"admin/logs/sub", "admin/logs/pub"};
+
+void write_callback(char *response){
+	printf("%s", response);
+}
+
+void store_log(const char *tokens[]){
+	CURL *curl;
+	CURLcode res;
+	char url[1024];
+	char request[1024];
+	char response[4096];
+	char fields[7][30] = {"institution", "location", "room", "timestamp", "level", "decibel", "status"};
+
+	snprintf(url, sizeof(url), "%s/%s.json?auth=%s", FIREBASE_URL, FIREBASE_COLLECTION, FIREBASE_API_KEY);
+	
+	strcpy("{\"");
+	for(int i=0; i<7; i++){
+		strcat(reqeust, fields[i]);
+		strcat(request, "\": \"");
+		strcat(request, tokens[i]);
+		if(i == 6){
+			strcat(request, "\"}");
+		} else {
+			strcat(request, "\", ");
+		}
+	}
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+
+	if(curl){
+		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_POST, 1L);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+
+		res = curl_easy_perform(curl);
+
+		if(res == CURLE_OK){
+			printf("data stored successfully");
+		}
+
+		curl_easy_cleanup(curl);
+	}
+
+	curl_global_cleanup();
+	
+}
 
 /*
  * This function is implemented based on the 'multiple_sub.c' from Lab08.
@@ -112,6 +166,9 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 		index++;
 		token = strtok(NULL, ",");
 	}
+
+	//store log
+	store_log((const char**)tokens);
     
 	//print out the log message
 	printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
