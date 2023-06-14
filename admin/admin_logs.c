@@ -28,64 +28,55 @@ void write_callback(void *response, size_t size, size_t nmemb, void *user_data){
     printf("%.*s", (int)(size * nmemb), response_str);
 }
 
-void store_log(const char *tokens[]){
-	CURL *curl;
-	CURLcode res;
-	char url[1024];
-	char request[1024];
-	char response[4096];
-	char fields[7][30] = {"institution", "location", "room", "timestamp", "level", "decibel", "status"};
+void store_log(const char *tokens[]) {
+    CURL *curl;
+    CURLcode res;
+    char url[1024];
+    char request[4096];
 
-	snprintf(url, sizeof(url), "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/%s", FIREBASE_PROJECT_ID, FIREBASE_COLLECTION);
-	
-	strcpy(request, "{");
-	for(int i=0; i<7; i++){
-		strcat(request, "\"");
-		strcat(request, fields[i]);
-		strcat(request, "\": \"");
-		strcat(request, tokens[i]);
-		strcat(request, "\"");
-		if(i != 6){
-			strcat(request, ", ");
-		}
-	}
-	strcat(request, "}");
+    snprintf(url, sizeof(url), "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/%s", FIREBASE_PROJECT_ID, FIREBASE_COLLECTION);
 
-	printf("%s\n", url);
-	printf("%s\n", request);
+    strcpy(request, "{");
+    for (int i = 0; i < 7; i++) {
+        strcat(request, "\"");
+        strcat(request, fields[i]);
+        strcat(request, "\": { \"stringValue\": \"");
+        strcat(request, tokens[i]);
+        strcat(request, "\" }");
+        if (i != 6) {
+            strcat(request, ", ");
+        }
+    }
+    strcat(request, "}");
 
-	curl_global_init(CURL_GLOBAL_ALL);
-	curl = curl_easy_init();
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
 
-	response[0] = '\0';
-
-	if(curl){
-		curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, "Content-Type: application/json"));
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 
         char auth_header[4096];
         snprintf(auth_header, sizeof(auth_header), "Authorization: Bearer %s", FIREBASE_API_KEY);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, auth_header));
-		res = curl_easy_perform(curl);
 
-		if(res == CURLE_OK){
-			printf("data stored successfully.\n");
-		} else {
-			fprintf(stderr, "request failed: %s\n", curl_easy_strerror(res));
-		}
+        res = curl_easy_perform(curl);
 
-		curl_easy_cleanup(curl);
-	}
+        if (res == CURLE_OK) {
+            printf("Data stored successfully.\n");
+        } else {
+            fprintf(stderr, "Request failed: %s\n", curl_easy_strerror(res));
+        }
 
-	curl_global_cleanup();
+        curl_easy_cleanup(curl);
+    }
+
+    curl_global_cleanup();
 }
 
 /*
