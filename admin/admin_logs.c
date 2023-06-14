@@ -16,7 +16,7 @@
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
-#define FIREBASE_URL "https://moappfinal-bbff1.firebaseio.com"
+#define FIREBASE_PROJECT_ID "moappfinal-bbff1"
 #define FIREBASE_API_KEY "AIzaSyCa5MueZF9nSREtn4Ekq3O0rExbxjUiZBA"
 #define FIREBASE_COLLECTION "logs"
 
@@ -35,19 +35,20 @@ void store_log(const char *tokens[]){
 	char response[4096];
 	char fields[7][30] = {"institution", "location", "room", "timestamp", "level", "decibel", "status"};
 
-	snprintf(url, sizeof(url), "%s/%s.json?auth=%s", FIREBASE_URL, FIREBASE_COLLECTION, FIREBASE_API_KEY);
+	snprintf(url, sizeof(url), "https://firestore.googleapis.com/v1/projects/%s/database/(default)/documents/%s", FIREBASE_PROJECT_ID, FIREBASE_COLLECTION);
 	
-	strcpy(request, "{\"");
+	strcpy(request, "{");
 	for(int i=0; i<7; i++){
+		strcat(request, "\"");
 		strcat(request, fields[i]);
 		strcat(request, "\": \"");
 		strcat(request, tokens[i]);
-		if(i == 6){
-			strcat(request, "\"}");
-		} else {
-			strcat(request, "\", ");
+		strcat(request, "\"");
+		if(i != 6){
+			strcat(request, ", ");
 		}
 	}
+	strcat(request, "}");
 
 	printf("%s\n", url);
 	printf("%s\n", request);
@@ -57,7 +58,7 @@ void store_log(const char *tokens[]){
 
 	if(curl){
 		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_POST, 1L);
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
