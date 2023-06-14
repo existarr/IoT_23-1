@@ -37,9 +37,9 @@ void store_log(const char *tokens[]){
 
 	snprintf(url, sizeof(url), "%s/%s.json?auth=%s", FIREBASE_URL, FIREBASE_COLLECTION, FIREBASE_API_KEY);
 	
-	strcpy("{\"");
+	strcpy(request, "{\"");
 	for(int i=0; i<7; i++){
-		strcat(reqeust, fields[i]);
+		strcat(request, fields[i]);
 		strcat(request, "\": \"");
 		strcat(request, tokens[i]);
 		if(i == 6){
@@ -73,30 +73,6 @@ void store_log(const char *tokens[]){
 }
 
 /*
- * This function is implemented based on the 'multiple_sub.c' from Lab08.
- * 
- * It prints out the connection result.
- * If unable to subscribe, disconnect from the broker.
-*/
-void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
-{
-	int rc;
-
-	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
-	if(reason_code != 0){
-		mosquitto_disconnect(mosq);
-	}
-
-	// if unable to subscribe, try to reconnect to broker 
-	rc = mosquitto_subscribe_multiple(mosq, NULL, 2, topics, 1, 0, NULL);
-	if(rc != MOSQ_ERR_SUCCESS){
-		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
-		reconnect(mosq);
-	}
-}
-
-
-/*
  * This function reconnects to broker when the connection is disconnected.
  * Continue to try to connect every second until connected.
 */
@@ -118,6 +94,28 @@ void reconnect(struct mosquitto *mosq) {
     }
 }
 
+/*
+ * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * 
+ * It prints out the connection result.
+ * If unable to subscribe, disconnect from the broker.
+*/
+void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
+{
+	int rc;
+
+	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
+	if(reason_code != 0){
+		mosquitto_disconnect(mosq);
+	}
+
+	// if unable to subscribe, try to reconnect to broker 
+	rc = mosquitto_subscribe_multiple(mosq, NULL, 2, topics, 1, 0, NULL);
+	if(rc != MOSQ_ERR_SUCCESS){
+		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
+		reconnect(mosq);
+	}
+}
 
 /*
  * This function is implemented based on the 'multiple_sub.c' from Lab08.

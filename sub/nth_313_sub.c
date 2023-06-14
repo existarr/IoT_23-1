@@ -29,6 +29,28 @@ char *const sub_topic = "handong/NTH/313";	//location topic	- subscribe
 char *const log_topic = "admin/logs/sub";	//log topic			- publish
 
 /*
+ * This function reconnects to broker when the connection is disconnected.
+ * Continue to try to connect every second until connected.
+*/
+void reconnect(struct mosquitto *mosq) {
+    while(1) {
+        printf("Try to reconnect to broker...\n");
+        // reconnect to new broker
+        int rc = mosquitto_connect(mosq, MQTT_HOST, MQTT_PORT, 60);
+        // if cannot connect to new broker, recreate broker again
+        if (rc != MOSQ_ERR_SUCCESS) {
+            fprintf(stderr, "Cannot connect to new broker: %s\n", mosquitto_strerror(rc));
+            sleep(1);
+        }
+        // if success to connect to new broker, break and back to monitor_broker_status()
+        else {
+            printf("Success to reconnect to broker\n");
+            break;
+        }
+    }
+}
+
+/*
  * This function is implemented based on the 'multiple_sub.c' from Lab08.
  * 
  * It prints out the connection result.
@@ -51,30 +73,6 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 	}
 
 }
-
-
-/*
- * This function reconnects to broker when the connection is disconnected.
- * Continue to try to connect every second until connected.
-*/
-void reconnect(struct mosquitto *mosq) {
-    while(1) {
-        printf("Try to reconnect to broker...\n");
-        // reconnect to new broker
-        int rc = mosquitto_connect(mosq, MQTT_HOST, MQTT_PORT, 60);
-        // if cannot connect to new broker, recreate broker again
-        if (rc != MOSQ_ERR_SUCCESS) {
-            fprintf(stderr, "Cannot connect to new broker: %s\n", mosquitto_strerror(rc));
-            sleep(1);
-        }
-        // if success to connect to new broker, break and back to monitor_broker_status()
-        else {
-            printf("Success to reconnect to broker\n");
-            break;
-        }
-    }
-}
-
 
 /*
  * This function is implemented based on the 'multiple_sub.c' from Lab08.

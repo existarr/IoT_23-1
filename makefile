@@ -37,7 +37,7 @@ $(EXEC_DIR)/broker_recovery: $(BUILD_DIR)/broker_recovery.o
 
 $(EXEC_DIR)/admin_logs: $(BUILD_DIR)/admin_logs.o
 	@mkdir -p $(@D)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) -lcurl
 
 $(EXEC_DIR)/admin_alerts: $(BUILD_DIR)/admin_alerts.o
 	@mkdir -p $(@D)
