@@ -16,7 +16,7 @@
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
-#define FIREBASE_URL "https://moappfinal-bbff1.firebaseio.com/"
+#define FIREBASE_URL "https://moappfinal-bbff1.firebaseio.com"
 #define FIREBASE_API_KEY "AIzaSyCa5MueZF9nSREtn4Ekq3O0rExbxjUiZBA"
 #define FIREBASE_COLLECTION "logs"
 
@@ -49,6 +49,9 @@ void store_log(const char *tokens[]){
 		}
 	}
 
+	printf("%s\n", url);
+	printf("%s\n", request);
+
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
 
@@ -62,7 +65,9 @@ void store_log(const char *tokens[]){
 		res = curl_easy_perform(curl);
 
 		if(res == CURLE_OK){
-			printf("data stored successfully");
+			printf("data stored successfully.\n");
+		} else {
+			fprintf(stderr, "request failed: %s\n", curl_easy_strerror(res));
 		}
 
 		curl_easy_cleanup(curl);
