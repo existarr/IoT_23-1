@@ -7,8 +7,9 @@
  * 
  * The normal range of noise value is from 1 to 100.
  * The range of the noise level as follows:
- *      if avg_decibel >  0 && avg_decibel <=  50 --> Warning Level 1 
- *      if avg_decibel > 50 && avg_decibel <=  80 --> Warning Level 2
+ *      if avg_decibel >  0 && avg_decibel <=  50 --> Normal Case
+ *      if avg_decibel > 50 && avg_decibel <=  65 --> Warning Level 1 
+ *      if avg_decibel > 65 && avg_decibel <=  80 --> Warning Level 2
  *      if avg_decibel > 80 && avg_decibel <= 100 --> Warning Level 3
  *      if avg_decibel <= 0 || avg_decibel >  100 --> There is an issue with the sound sensor
  * 
@@ -30,6 +31,10 @@ char institution[10] = "handong";
 char location[10] = "NTH";
 char room[10] = "313";
 
+char topic[30] = "handong/NTH/313";
+char admin_alerts[30] = "admin/alerts";
+char admin_logs[30] = "admin/logs/pub";
+
 int test_case[5][10] = {
     {10, 23, 5, 50, 1, 17, 40, 32, 8, 12},              // Warning Level 1 
     {72, 66, 78, 55, 67, 59, 61, 53, 70, 50},           // Warning Level 2
@@ -37,11 +42,6 @@ int test_case[5][10] = {
     {-5, 2, -8, -3, 7, -15, -9, -2, 6, -11},            // Unhealthy
     {110, 120, 105, 130, 115, 125, 105, 135, 140, 130}  // Unhealthy    
 };
-
-char topic[30] = "handong/NTH/313";
-char admin_alerts[30] = "admin/alerts";
-char admin_logs[30] = "admin/logs/pub";
-
 
 /*
  * This function is implemented based on the 'multiple_pub.c' from Lab08.
@@ -59,13 +59,36 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 
 
 /*
+ * This function reconnects to broker when the connection is disconnected.
+ * Continue to try to connect every second until connected.
+*/
+void reconnect(struct mosquitto *mosq) {
+    while(1) {
+        printf("Try to reconnect to broker...\n");
+        // reconnect to new broker
+        int rc = mosquitto_connect(mosq, MQTT_HOST, MQTT_PORT, 60);
+        // if cannot connect to new broker, recreate broker again
+        if (rc != MOSQ_ERR_SUCCESS) {
+            fprintf(stderr, "Cannot connect to new broker: %s\n", mosquitto_strerror(rc));
+            sleep(1);
+        }
+        // if success to connect to new broker, break and back to monitor_broker_status()
+        else {
+            printf("Success to reconnect to broker\n");
+            break;
+        }
+    }
+}
+
+
+/*
  * This function is implemented based on the 'multiple_pub.c' from Lab08.
  * 
- *  Callback called when the client knows to the best of its abilities that a PUBLISH has been successfully sent.
+ * Callback called when the client knows to the best of its abilities that a PUBLISH has been successfully sent.
 */
 void on_publish(struct mosquitto *mosq, void *obj, int mid)
 {
-    printf("Message with mid %d has been published.\n", mid);
+    // printf("Message with mid %d has been published.\n", mid);
 }
 
 
@@ -115,11 +138,13 @@ float cal_avg_decibel(bool test, int case_num) {
  *      if avg_decibel <= 0 || avg_decibel >  100 --> There is an issue with the sound sensor. Reoprt to 'admin/alerts'
 */
 int cal_alert_level(float avg_decibel) {
-    if(avg_decibel > 0 && avg_decibel <= 50)        // Warning Level 1
+    if(avg_decibel > 0 && avg_decibel <= 50)        // Normal Case
+        return 0;
+    else if(avg_decibel > 50 && avg_decibel <= 65)  // Warning Level 1
         return 1;
-    else if(avg_decibel > 50 && avg_decibel <= 80)  // Warning Level 1
+    else if(avg_decibel > 65 && avg_decibel <= 80)  // Warning Level 2
         return 2;
-    else if(avg_decibel > 80 && avg_decibel <= 100) // Warning Level 1
+    else if(avg_decibel > 80 && avg_decibel <= 100) // Warning Level 3
         return 3;
     else                                            // Unhealthy Sensor 
         return -1;
@@ -190,6 +215,7 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
         rc = mosquitto_publish(mosq, NULL, topic, strlen(buffer), buffer, 1, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+            reconnect(mosq);
         }
     }
     // if the range of decibel is unnormal, publish data to admin/alerts
@@ -197,6 +223,7 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
         rc = mosquitto_publish(mosq, NULL, admin_alerts, strlen(buffer), buffer, 1, false);
         if(rc != MOSQ_ERR_SUCCESS){
             fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+            reconnect(mosq);
         }
     }
     
@@ -204,13 +231,14 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
     rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 1, false);
     if(rc != MOSQ_ERR_SUCCESS){
         fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+        reconnect(mosq);
     }
 }
 
 
 int main(int argc, char *argv[])
 {
-    struct mosquitto *mosq;
+    struct mosquitto *mosq = NULL;
     int rc;
 
     float avg_decibel = 0.0;

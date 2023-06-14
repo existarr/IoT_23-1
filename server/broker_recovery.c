@@ -5,6 +5,8 @@
  * When a broker is terminated unintentionally, this program detects it and creates and executes a new broker. 
  * For this purpose, the broker's status is checked every second.
  * If there is a problem, the program attempts to recover until the broker operates normally.
+ * 
+ * Also, all the logs of the broker's status are published to the 'admin/logs/server' topic.
 */
 
 #include <stdio.h>
@@ -19,6 +21,8 @@
 #define MQTT_PORT 1883
 
 struct mosquitto *mosq = NULL;
+
+char admin_logs[30] = "admin/logs/server";
 
 /*
  * This function is implemented based on the 'multiple_pub.c' from Lab08.
@@ -43,6 +47,8 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
  * If cannot connect to new broker, try to recreate broker and connect again.
 */
 void recover_broker() {
+    char buffer[1024];
+
     while(1) {
         // create new broker on another terminal
         system("gnome-terminal -- mosquitto -v"); 
@@ -56,6 +62,15 @@ void recover_broker() {
         // if success to connect to new broker, break and back to monitor_broker_status()
         else {
             printf("Success to create and connect to new broker\n");
+            
+            // publish log
+            sprintf(buffer, "Broker is rerunning now\n");
+            rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 1, false);
+            if(rc != MOSQ_ERR_SUCCESS){
+                fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+                continue;
+            }
+            
             break;
         }
     }

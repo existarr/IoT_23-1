@@ -1,17 +1,8 @@
 /*
  * Author: Chang Yu Jin
  * 
- * This program is the subscriber of Noise Warning Program. 
- * It receives a message from a publisher in the same location as the subscriber.
- * The message contains information about noise in the location of the subscriber.
- * It alerts a warning level of noise with the value measured in decibel.
- * 
- * dB range:
- * 		0 ~ 50 dB		- warning level 1
- * 		51 ~ 80 dB		- warning level 2
- * 		81 ~ 100 dB		- warning level 3
- * 
- * Also, all data transmission logs are published to the 'admin/logs/sub' topic.
+ * This program is the log record of Noise Warning Program. 
+ * It receives log messages from publishers and subscribers of the program about their actions.
 */
 
 #include <mosquitto.h>
@@ -20,12 +11,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MQTT_HOST 	"127.0.0.1" //"test.mosquitto.org"
+#define MQTT_HOST 	"127.0.0.1" 
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
-char *const sub_topic = "handong/NTH/313";	//location topic	- subscribe
-char *const log_topic = "admin/logs/sub";	//log topic			- publish
+//log topics (distinguish between publish messages from subscriber and publisher in a location)
+char *const topics[] = {"admin/logs/sub", "admin/logs/pub"};
 
 /*
  * This function is implemented based on the 'multiple_sub.c' from Lab08.
@@ -35,20 +26,42 @@ char *const log_topic = "admin/logs/sub";	//log topic			- publish
 */
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
-	int sub_rc;
+	int rc;
 
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
 	if(reason_code != 0){
 		mosquitto_disconnect(mosq);
 	}
 
-	//if unable to subscribe, disconnect from the broker
-	sub_rc = mosquitto_subscribe(mosq, NULL, sub_topic, 1);
-	if(sub_rc != MOSQ_ERR_SUCCESS){
-		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(sub_rc));
-		mosquitto_disconnect(mosq);
+	// if unable to subscribe, try to reconnect to broker 
+	rc = mosquitto_subscribe_multiple(mosq, NULL, 2, topics, 1, 0, NULL);
+	if(rc != MOSQ_ERR_SUCCESS){
+		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
+		reconnect(mosq);
 	}
+}
 
+
+/*
+ * This function reconnects to broker when the connection is disconnected.
+ * Continue to try to connect every second until connected.
+*/
+void reconnect(struct mosquitto *mosq) {
+    while(1) {
+        printf("Try to reconnecbt to broker...\n");
+        // reconnect to new broker
+        int rc = mosquitto_connect(mosq, MQTT_HOST, MQTT_PORT, 60);
+        // if cannot connect to new broker, recreate broker again
+        if (rc != MOSQ_ERR_SUCCESS) {
+            fprintf(stderr, "Cannot connect to new broker: %s\n", mosquitto_strerror(rc));
+            sleep(1);
+        }
+        // if success to connect to new broker, break and back to monitor_broker_status()
+        else {
+            printf("Success to reconnect to broker\n");
+            break;
+        }
+    }
 }
 
 
@@ -80,28 +93,15 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 
 
 /*
- * This function is implemented based on the 'multiple_sub.c' from Lab08.
+ * This function deals with the process after a message (for logs) has been received.
  * Callback called when the client receives a message.
  * 
- * It publishes a log message to the "admin/logs/sub" topic.
- * 
- * After receiving a message from a publisher, it separates each piece of information by using delimeter (,).
+ * After receiving a publish message from either publisher or subscriber, it separates each piece of information by using delimeter (,).
  * It puts each piece into tokens array in order.
- * It converts decibel and level into integer type.
- * It checks whether the level and the decibel value match (just in case)
- * It prints the level and the decibel value.
+ * It prints a log message.
 */
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
-
-	//publish log message to the "admin/logs/sub" topic
-	int log_rc;
-	log_rc = mosquitto_publish(mosq, NULL, log_topic, strlen((char *)msg->payload), (char *)msg->payload, 1, false);
-        if(log_rc != MOSQ_ERR_SUCCESS){
-            fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(log_rc));
-        }
-
-	//get each piece of information
 	char *tokens[MAX_TOKEN];
 	int index = 0;
 
@@ -112,19 +112,9 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 		index++;
 		token = strtok(NULL, ",");
 	}
-
-	//conversion to integer type for the warning level and decibel
-	int level = atoi(tokens[4]);
-	int decibel = atoi(tokens[5]);
-
-	//check if the noise measured in dB is assigned to a corresponding warning level and print the result
-	if(level == 1 && decibel <= 50){
-		printf("level 1 - %d dB\n", decibel);
-	} else if (level == 2 && decibel > 50 && decibel <= 80){
-		printf("level 2 - %d dB\n", decibel);
-	} else if (level == 3 && decibel > 80 && decibel <= 100){
-		printf("level 3 - %d dB\n", decibel);
-	}
+    
+	//print out the log message
+	printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
 }
 
 
@@ -149,7 +139,6 @@ int main(int argc, char *argv[])
 
 	/* Configure callbacks. This should be done before connecting ideally. */
 	mosquitto_connect_callback_set(mosq, on_connect);
-	// mosquitto_publish_callback_set(mosq, on_publish);
 	mosquitto_subscribe_callback_set(mosq, on_subscribe);
 	mosquitto_message_callback_set(mosq, on_message);
 
