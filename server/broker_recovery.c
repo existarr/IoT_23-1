@@ -97,6 +97,7 @@ void monitor_broker_status() {
 
 int main()
 {
+    printf("BROKER RECOVERY\n");
     printf("The program for recovering broker is now running...\n");
 
     /* Required before calling other mosquitto functions */
