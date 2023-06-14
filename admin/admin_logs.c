@@ -71,7 +71,7 @@ void store_log(const char *tokens[]){
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 
-        char auth_header[256];
+        char auth_header[4096];
         snprintf(auth_header, sizeof(auth_header), "Authorization: Bearer %s", FIREBASE_API_KEY);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, auth_header));
 		res = curl_easy_perform(curl);
