@@ -23,8 +23,9 @@
 //log topics (distinguish between publish messages from subscriber and publisher in a location)
 char *const topics[] = {"admin/logs/sub", "admin/logs/pub"};
 
-void write_callback(char *response){
-	printf("%s", response);
+void write_callback(void *response, size_t size, size_t nmemb, void *user_data){
+	char *response_str = (char *)response;
+    printf("%.*s", (int)(size * nmemb), response_str);
 }
 
 void store_log(const char *tokens[]){
@@ -56,12 +57,15 @@ void store_log(const char *tokens[]){
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
 
+	response[0] = '\0';
+
 	if(curl){
 		curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_slist_append(NULL, "Content-Type: application/json"));
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
