@@ -8,9 +8,9 @@
 이를 위하여 publisher는 특정 시설 내의 소음을 측정하고 소음 경고 알림을 보내며, subscriber는 특정 시설 내의 위치하고 있는 구독자로 소음 경고에 대한 이벤트를 받는다. <br/>
 <br/>
 ---
-### Directory Structure
+#### Directory Structure
 
-#### server<br/>
+server<br/>
 ㄴ broker_recovery.c<br/>
 admin<br/>
 ㄴ admin_logs.c<br/>
@@ -20,12 +20,12 @@ pub<br/>
 sub<br/>
 ㄴ nth_313_sub.c<br/>
 ---
-### Needed Library
+#### Needed Library
 * mosquitto
 ---
-### Functions
+#### Functions
 
-#### <b/>./server/broker_recovery<br/>
+<b/>./server/broker_recovery<br/>
 Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
 <br/>
 <b/>./admin/admin_logs<br/>
@@ -42,12 +42,12 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 특정 위치의 소음 이벤트를 수신한다. <br/>
 <br/>
 ---
-### Environment
+#### Environment
 
-#### Ubuntu 22.04 LTS <br/>
+Ubuntu 22.04 LTS <br/>
 <br/>
 ---
-### How to run
+#### How to run
 
 1. Compile<br/>
 소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/>
@@ -60,13 +60,15 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 ```
     ./run_program.bash
 ```
+
     또는<br/>
     make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
     단, 다음의 순서로 실행해야 한다.<br/>
 
+```
     ./bin/broker_recovery
     ./bin/admin_logs
     ./bin/admin_alerts
     ./bin/nth_313_pub
     ./bin/nth_313_sub
-    
+```
