@@ -154,7 +154,9 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 
 int main(int argc, char *argv[])
 {
-	printf("NTH 313 SUBSCRIBER\n");
+	printf("----------------------\n");
+    printf("  NTH 313 SUBSCRIBER  \n");
+    printf("----------------------\n\n");
 
 	struct mosquitto *mosq;
 	int rc;

@@ -63,8 +63,10 @@ void recover_broker() {
         else {
             printf("Success to create and connect to new broker\n");
             
+            sleep(1);
+
             // publish log
-            sprintf(buffer, "broker,Broker is re-running now\n");
+            sprintf(buffer, "broker,Broker is re-running now");
             rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 1, false);
             if(rc != MOSQ_ERR_SUCCESS){
                 fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
@@ -90,14 +92,16 @@ void monitor_broker_status() {
             recover_broker();
         }
 
-        sleep(1);
+        sleep(3);
     }
 }
 
 
 int main()
-{
-    printf("BROKER RECOVERY\n");
+{   
+    printf("----------------------\n");
+    printf("    BROKER RECOVERY   \n");
+    printf("----------------------\n\n");
     printf("The program for recovering broker is now running...\n");
 
     /* Required before calling other mosquitto functions */

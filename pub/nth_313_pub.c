@@ -238,8 +238,10 @@ void publish_decibel_data(struct mosquitto *mosq, char* buffer, int noise_level)
 
 int main(int argc, char *argv[])
 {
-    printf("NTH 313 PUBLISHER\n");
-
+    printf("----------------------\n");
+    printf("   NTH 313 PUBLISHER  \n");
+    printf("----------------------\n\n");
+    
     struct mosquitto *mosq = NULL;
     int rc;
 

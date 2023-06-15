@@ -93,21 +93,24 @@ char *const topics[] = {"admin/logs/sub", "admin/logs/pub", "admin/logs/broker"}
 */
 void reconnect(struct mosquitto *mosq) {
     while(1) {
-        printf("Try to reconnecbt to broker...\n");
         // reconnect to new broker
         int rc = mosquitto_connect(mosq, MQTT_HOST, MQTT_PORT, 60);
-        // if cannot connect to new broker, recreate broker again
-        if (rc != MOSQ_ERR_SUCCESS) {
-            fprintf(stderr, "Cannot connect to new broker: %s\n", mosquitto_strerror(rc));
-            sleep(1);
-        }
-        // if success to connect to new broker, break and back to monitor_broker_status()
+        
+		if (rc != MOSQ_ERR_SUCCESS) {
+            //sleep(1);
+        } 
         else {
-            printf("Success to reconnect to broker\n");
             break;
         }
     }
 }
+
+void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
+{
+    printf("[admin/logs/broker] Broker is disconnected\n");
+	reconnect(mosq);
+}
+
 
 /*
  * This function is implemented based on the 'multiple_sub.c' from Lab08.
@@ -119,16 +122,15 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 {
 	int rc;
 
-	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
 	if(reason_code != 0){
 		mosquitto_disconnect(mosq);
 	}
 
 	// if unable to subscribe, try to reconnect to broker 
-	rc = mosquitto_subscribe_multiple(mosq, NULL, 2, topics, 1, 0, NULL);
+	rc = mosquitto_subscribe_multiple(mosq, NULL, 3, topics, 1, 0, NULL);
 	if(rc != MOSQ_ERR_SUCCESS){
 		fprintf(stderr, "Error subscribing: %s\n", mosquitto_strerror(rc));
-		reconnect(mosq);
+		mosquitto_disconnect(mosq);
 	}
 }
 
@@ -145,7 +147,6 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 	 * SUBSCRIBE can contain many topics at once, so this is one way to check
 	 * them all. */
 	for(i=0; i<qos_count; i++){
-		printf("on_subscribe: %d:granted qos = %d\n", i, granted_qos[i]);
 		if(granted_qos[i] <= 2){
 			have_subscription = true;
 		}
@@ -175,7 +176,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 	//each piece extracted with the delimeter
 	char *token = strtok((char *)msg->payload, ",");
 	if(strcmp(token, "broker") == 0){
-		token = strtok(Null, ",");
+		token = strtok(NULL, ",");
 		printf("[%s] %s\n", msg->topic, token);
 	} else {
 		while (token != NULL & index < MAX_TOKEN){
@@ -197,7 +198,9 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 
 int main(int argc, char *argv[])
 {
-	printf("ADMIN LOGS\n");
+	printf("----------------------\n");
+    printf("       ADMIN LOGS     \n");
+    printf("----------------------\n\n");
 	struct mosquitto *mosq;
 	int rc;
 
@@ -219,6 +222,7 @@ int main(int argc, char *argv[])
 	mosquitto_connect_callback_set(mosq, on_connect);
 	mosquitto_subscribe_callback_set(mosq, on_subscribe);
 	mosquitto_message_callback_set(mosq, on_message);
+	mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
 	/* Connect to test.mosquitto.org on port 1883, with a keepalive of 60 seconds.
 	 * This call makes the socket connection only, it does not complete the MQTT

@@ -51,7 +51,6 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 	// TODO
 	int rc;
 
-	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
 	if(reason_code != 0){
 		mosquitto_disconnect(mosq);
 	}
@@ -77,7 +76,6 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 	 * SUBSCRIBE can contain many topics at once, so this is one way to check
 	 * them all. */
 	for(i=0; i<qos_count; i++){
-		printf("on_subscribe: %d:granted qos = %d\n", i, granted_qos[i]);
 		if(granted_qos[i] <= 2){
 			have_subscription = true;
 		}
@@ -119,7 +117,9 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 
 int main(int argc, char *argv[])
 {
-	printf("ADMIN ALERTS\n");
+	printf("----------------------\n");
+    printf("      ADMIN ALERTS    \n");
+    printf("----------------------\n\n");
 
 	struct mosquitto *mosq;
 	int rc;
