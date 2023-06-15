@@ -21,7 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MQTT_HOST 	"127.0.0.1" //"test.mosquitto.org"
+#define MQTT_HOST 	"0.0.0.0" 
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 

@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MQTT_HOST 	"127.0.0.1" //"test.mosquitto.org"
+#define MQTT_HOST 	"0.0.0.0" 
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
@@ -120,7 +120,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 int main(int argc, char *argv[])
 {
 	printf("ADMIN ALERTS\n");
-	
+
 	struct mosquitto *mosq;
 	int rc;
 

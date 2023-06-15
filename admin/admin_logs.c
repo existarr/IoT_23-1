@@ -10,9 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <curl/curl.h>
 
-#define MQTT_HOST 	"127.0.0.1" 
+#define MQTT_HOST 	"0.0.0.0" 
 #define MQTT_PORT	1883
 #define MAX_TOKEN	7
 
