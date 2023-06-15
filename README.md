@@ -8,7 +8,8 @@
 이를 위하여 publisher는 특정 시설 내의 소음을 측정하고 소음 경고 알림을 보내며, subscriber는 특정 시설 내의 위치하고 있는 구독자로 소음 경고에 대한 이벤트를 받는다. <br/>
 <br/>
 ---
-### Directory Structure<br/>
+### Directory Structure
+
 server<br/>
 ㄴ broker_recovery.c<br/>
 admin<br/>
@@ -22,7 +23,8 @@ sub<br/>
 ### Needed Library
 * mosquitto
 ---
-### Functions<br/>
+### Functions
+
 <b/>./server/broker_recovery<br/>
 Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
 <br/>
@@ -40,11 +42,13 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 특정 위치의 소음 이벤트를 수신한다. <br/>
 <br/>
 ---
-### Environment<br/>
+### Environment
+
 Ubuntu 22.04 LTS <br/>
 <br/>
 ---
 ### How to run
+
 1. Compile<br/>
 소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/>
 
