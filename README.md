@@ -18,6 +18,9 @@ pub<br/>
 sub<br/>
 ㄴ nth_313_sub.c<br/>
 
+#### Needed Library
+* mosquitto
+
 <b/>./server/broker_recovery<br/>
 Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
 <br/>
