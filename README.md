@@ -7,6 +7,7 @@
 특정 시설 내의 소음이 임계값을 넘어가면 해당 시설 또는 호실 내에 있는 사람들에게 소음 경고 알림을 보낸다. <br/>
 이를 위하여 publisher는 특정 시설 내의 소음을 측정하고 소음 경고 알림을 보내며, subscriber는 특정 시설 내의 위치하고 있는 구독자로 소음 경고에 대한 이벤트를 받는다. <br/>
 <br/>
+
 ---
 ### Directory Structure</br>
 
@@ -19,9 +20,12 @@
 ㄴ nth_313_pub.c<br/>
 * **sub**<br/>
 ㄴ nth_313_sub.c<br/>
+
 ---
 ### Needed Library
 * mosquitto
+</br>
+
 ---
 ### File Overview
 
@@ -60,7 +64,6 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 ```
     ./run_program.bash
 ```
-</br>
 또는<br/>
 make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
 단, 다음의 순서로 실행해야 한다.<br/>
