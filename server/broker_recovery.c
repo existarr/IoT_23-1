@@ -6,7 +6,7 @@
  * For this purpose, the broker's status is checked every second.
  * If there is a problem, the program attempts to recover until the broker operates normally.
  * 
- * Also, all the logs of the broker's status are published to the 'admin/logs/server' topic.
+ * Also, all the logs of the broker's status are published to the 'admin/logs/broker' topic.
 */
 
 #include <stdio.h>
