@@ -28,7 +28,7 @@
 
 ---
 
-### Overview
+### File Overview
 
 * **server/broker_recovery.c**<br/>
 Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
