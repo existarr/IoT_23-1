@@ -64,13 +64,10 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 ```
 2. Run<br/>
 그 다음, 터미널에 아래의 명령어를 입력해 실행시킨다.<br/>
-```
-    ./run_program.bash
-```
+`./run_program.bash`
 또는<br/>
 make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
 단, 다음의 순서로 실행해야 한다.<br/>
-
 ```
     ./bin/broker_recovery
     ./bin/admin_logs
