@@ -20,7 +20,7 @@
 // #define FIREBASE_COLLECTION "logs"
 
 //log topics (distinguish between publish messages from subscriber and publisher in a location)
-char *const topics[] = {"admin/logs/sub", "admin/logs/pub"};
+char *const topics[] = {"admin/logs/sub", "admin/logs/pub", "admin/logs/broker"};
 
 // void write_callback(void *response, size_t size, size_t nmemb, void *user_data){
 // 	char *response_str = (char *)response;
@@ -174,17 +174,24 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 
 	//each piece extracted with the delimeter
 	char *token = strtok((char *)msg->payload, ",");
-	while (token != NULL & index < MAX_TOKEN){
-		tokens[index] = token;
-		index++;
-		token = strtok(NULL, ",");
+	if(strcmp(token, "broker") == 0){
+		token = strtok(Null, ",");
+		printf("[%s] %s\n", msg->topic, token);
+	} else {
+		while (token != NULL & index < MAX_TOKEN){
+			tokens[index] = token;
+			index++;
+			token = strtok(NULL, ",");
+		}
+		//print out the log message
+		printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
 	}
+	
 
 	//store log
 	// store_log((const char**)tokens);
     
-	//print out the log message
-	printf("[%s] location: %s_%s_%s, decibel: %s, noise_level: %s, health_status: %s, time: %s\n", msg->topic, tokens[0], tokens[1], tokens[2], tokens[5], tokens[4], tokens[6], tokens[3]);
+	
 }
 
 
