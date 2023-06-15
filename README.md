@@ -6,9 +6,9 @@
 본 프로그램은 MQTT를 활용하여 특정 시설 내의 소음 경고 알림을 보내는 것을 목적으로 한다. <br/>
 특정 시설 내의 소음이 임계값을 넘어가면 해당 시설 또는 호실 내에 있는 사람들에게 소음 경고 알림을 보낸다. <br/>
 이를 위하여 publisher는 특정 시설 내의 소음을 측정하고 소음 경고 알림을 보내며, subscriber는 특정 시설 내의 위치하고 있는 구독자로 소음 경고에 대한 이벤트를 받는다. <br/>
-<br/>
 
 ---
+
 ### Directory Structure</br>
 
 * **server**<br/>
@@ -22,12 +22,13 @@
 ㄴ nth_313_sub.c<br/>
 
 ---
+
 ### Needed Library
 * mosquitto
-</br>
 
 ---
-### File Overview
+
+### Overview
 
 * **server/broker_recovery.c**<br/>
 Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
@@ -46,11 +47,13 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 특정 위치의 소음 이벤트를 수신한다. <br/>
 
 ---
+
 ### Environment
 
 * Ubuntu 22.04 LTS <br/>
 
 ---
+
 ### How to run
 
 1. Compile<br/>
