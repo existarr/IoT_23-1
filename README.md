@@ -10,7 +10,7 @@
 ---
 ### Directory Structure</br>
 
-**server**<br/>
+##### **server**<br/>
 ㄴ broker_recovery.c<br/>
 **admin**<br/>
 ㄴ admin_logs.c<br/>
