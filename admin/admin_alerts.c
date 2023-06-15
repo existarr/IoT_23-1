@@ -19,20 +19,22 @@
 char *const topic = "admin/alerts"; //alert topic
 
 /*
- * This function reconnects to broker when the connection is disconnected.
- * Continue to try to connect every second until connected.
+ * This function reconnects to a new broker when the previous broker is disconnected.
+ * It calls the connect function until it is successfully connected.
 */
 void reconnect(struct mosquitto *mosq) {
     while(1) {
         printf("Try to reconnect to broker...\n");
-        // reconnect to new broker
+
+        // reconnect to a new broker
         int rc = mosquitto_connect(mosq, MQTT_HOST, MQTT_PORT, 60);
-        // if cannot connect to new broker, recreate broker again
+
+        // if connection failed, wait for a second and reconnect to a broker
         if (rc != MOSQ_ERR_SUCCESS) {
             fprintf(stderr, "Cannot connect to new broker: %s\n", mosquitto_strerror(rc));
             sleep(1);
         }
-        // if success to connect to new broker, break and back to monitor_broker_status()
+        // if connection succeeded, break the while loop
         else {
             printf("Success to reconnect to broker\n");
             break;
@@ -90,7 +92,7 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 
 
 /*
- * TThis function deals with the process after a message (for alerts) has been received.
+ * This function deals with the process after a message (for alerts) has been received.
  * Callback called when the client receives a message.
  * 
  * After receiving a message from a publisher, it separates each piece of information by using delimeter (,).
