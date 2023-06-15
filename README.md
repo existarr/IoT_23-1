@@ -23,6 +23,12 @@
 
 ---
 
+### Environment
+
+* Ubuntu 22.04 LTS <br/>
+
+---
+
 ### Needed Library
 * mosquitto
 
@@ -31,7 +37,7 @@
 ### File Overview
 
 * **server/broker_recovery.c**<br/>
-Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
+Broker의 상태를 3초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
 
 * **admin/admin_logs.c**<br/>
 broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데이터 송수신에 대한 모든 로그를 기록한다.<br/>
@@ -45,12 +51,6 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 
 * **sub/nth_313_sub.c**<br/>
 특정 위치의 소음 이벤트를 수신한다. <br/>
-
----
-
-### Environment
-
-* Ubuntu 22.04 LTS <br/>
 
 ---
 

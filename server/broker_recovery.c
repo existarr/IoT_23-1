@@ -43,7 +43,7 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
 /*
  * This function creates new broker.
  * To create new broker, open new terminal window and command 'mosquittio -v'.
- * Then, try to connect to created broker.
+ * Then, try to connect to cgreated broker.
  * If cannot connect to new broker, try to recreate broker and connect again.
 */
 void recover_broker() {
@@ -80,12 +80,12 @@ void recover_broker() {
 
 
 /*
- * This functions monitor the status of the broker every second.
+ * This functions monitor the status of the broker every 3 seconds.
  * If there is a problem to broker, try to recover it by calling recover_broker().
 */
 void monitor_broker_status() {
     while (1) {
-        // check the status of broker every 1 second.
+        // check the status of broker every 3 seconds.
         int state = mosquitto_loop(mosq, 0, 1);
         if (state != MOSQ_ERR_SUCCESS && state != MOSQ_ERR_CONN_LOST) {
             fprintf(stderr, "Broker connection lost: %s\n", mosquitto_strerror(state));
