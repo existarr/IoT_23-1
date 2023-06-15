@@ -57,13 +57,13 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 ### How to run
 
 1. Compile<br/>
-소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/>
+소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/><br/>
 `chmod +x run_program.sh`<br/>
-`make`<br/>
+`make`<br/><br/>
 2. Run<br/>
-그 다음, 터미널에 아래의 명령어를 입력해 실행시킨다.<br/>
-`./run_program.bash`<br/>
-또는<br/>
+그 다음, 터미널에 아래의 명령어를 입력해 실행시킨다.<br/><br/>
+`./run_program.bash`<br/><br/>
+또는<br/><br/>
 make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
 단, 다음의 순서로 실행해야 한다.<br/>
 ```
