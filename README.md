@@ -23,22 +23,22 @@
 ### Needed Library
 * mosquitto
 ---
-### Functions
+### File Overview
 
-* **./server/broker_recovery.c**<br/>
-###### Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
+* **server/broker_recovery.c**<br/>
+Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
 
-* **./admin/admin_logs.c**<br/>
+* **admin/admin_logs.c**<br/>
 broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데이터 송수신에 대한 모든 로그를 기록한다.<br/>
 
-* **./admin/admin_alerts.c**<br/>
+* **admin/admin_alerts.c**<br/>
 소음 측정 센서의 상태 등 관리자가 긴급하게 확인해야 할 이벤트를 수신한다.<br/>
 
-* **./pub/nth_313_pub.c**<br/>
+* **pub/nth_313_pub.c**<br/>
 특정 위치의 소음을 측정하고 소음에 대한 이벤트를 subcriber에게 전달한다. <br/>
 이때, 소음이 정상 범위(1-100)의 값일 경우 해당 위치의 subscriber에게소음에 대한 event를 전달하지만, 정상 범위가 아닌 경우 이를 리포트하기 위해 ‘admin/alerts’ 토픽에 event를 전달한다.<br/>
 
-* **./sub/nth_313_sub.c**<br/>
+* **sub/nth_313_sub.c**<br/>
 특정 위치의 소음 이벤트를 수신한다. <br/>
 
 ---
