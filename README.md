@@ -7,7 +7,8 @@
 특정 시설 내의 소음이 임계값을 넘어가면 해당 시설 또는 호실 내에 있는 사람들에게 소음 경고 알림을 보낸다. <br/>
 이를 위하여 publisher는 특정 시설 내의 소음을 측정하고 소음 경고 알림을 보내며, subscriber는 특정 시설 내의 위치하고 있는 구독자로 소음 경고에 대한 이벤트를 받는다. <br/>
 <br/>
-#### Directory Structure
+---
+### Directory Structure
 server<br/>
 ㄴ broker_recovery.c<br/>
 admin<br/>
@@ -17,10 +18,11 @@ pub<br/>
 ㄴ nth_313_pub.c<br/>
 sub<br/>
 ㄴ nth_313_sub.c<br/>
-
-#### Needed Library
+---
+### Needed Library
 * mosquitto
-
+---
+### Functions
 <b/>./server/broker_recovery<br/>
 Broker의 상태를 1초마다 체크하고 어떠한 이유로 broker와의 연결이 끊겼다면 새로운 broker를 실행시킨다.<br/>
 <br/>
@@ -37,28 +39,33 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 <b/>./sub/nth_313_sub.c<br/>
 특정 위치의 소음 이벤트를 수신한다. <br/>
 <br/>
-
-#### Environment
+---
+### Environment
 Ubuntu 22.04 LTS <br/>
 <br/>
-
-#### How to run
+---
+### How to run
 1. Compile<br/>
 소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/>
-chmod +x run_program.sh<br/>
-make<br/>
+
+    chmod +x run_program.sh<br/>
+    make<br/>
 
 2. Run<br/>
 그 다음, 터미널에 아래의 명령어를 입력해 실행시킨다.<br/>
-./run_program.bash<br/>
+
+    ./run_program.bash<br/>
+    
 <br/>
-또는<br/>
+또는
 <br/>
 make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
 단, 다음의 순서로 실행해야 한다.<br/>
 <br/>
-./bin/broker_recovery<br/>
-./bin/admin_logs<br/>
-./bin/admin_alerts<br/>
-./bin/nth_313_pub<br/>
-./bin/nth_313_sub<br/>
+
+    ./bin/broker_recovery<br/>
+    ./bin/admin_logs<br/>
+    ./bin/admin_alerts<br/>
+    ./bin/nth_313_pub<br/>
+    ./bin/nth_313_sub<br/>
+    
