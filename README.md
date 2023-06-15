@@ -58,8 +58,10 @@ broker_recovery에서 발생한 이벤트와 publisher와 subscriber 간의 데�
 
 1. Compile<br/>
 소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/><br/>
-```chmod +x run_program.sh
-make```<br/><br/>
+```
+    chmod +x run_program.sh
+    make
+```<br/><br/>
 2. Run<br/>
 그 다음, 터미널에 아래의 명령어를 입력해 실행시킨다.<br/><br/>
 ```./run_program.bash```<br/><br/>
