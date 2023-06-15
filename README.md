@@ -51,15 +51,15 @@ Ubuntu 22.04 LTS <br/>
 
 1. Compile<br/>
 소스코드를 컴파일하기 위해 터미널을 열어 아래의 명령어를 입력한다.<br/>
-
+```
     chmod +x run_program.sh
     make
-
+```
 2. Run<br/>
 그 다음, 터미널에 아래의 명령어를 입력해 실행시킨다.<br/>
-
+```
     ./run_program.bash
-    
+```  
 <br/>
 또는
 <br/>
