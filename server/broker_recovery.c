@@ -22,7 +22,7 @@
 
 struct mosquitto *mosq = NULL;
 
-char admin_logs[30] = "admin/logs/server";
+char admin_logs[30] = "admin/logs/broker";
 
 /*
  * This function is implemented based on the 'multiple_pub.c' from Lab08.
@@ -64,7 +64,7 @@ void recover_broker() {
             printf("Success to create and connect to new broker\n");
             
             // publish log
-            sprintf(buffer, "Broker is rerunning now\n");
+            sprintf(buffer, "broker,Broker is re-running now\n");
             rc = mosquitto_publish(mosq, NULL, admin_logs, strlen(buffer), buffer, 1, false);
             if(rc != MOSQ_ERR_SUCCESS){
                 fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
