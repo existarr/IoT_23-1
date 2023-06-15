@@ -10,9 +10,9 @@
 ---
 ### Directory Structure</br>
 
-##### **server**<br/>
++ **server**<br/>
 ㄴ broker_recovery.c<br/>
-**admin**<br/>
++ **admin**<br/>
 ㄴ admin_logs.c<br/>
 ㄴ admin_alerts.c<br/>
 **pub**<br/>
@@ -60,9 +60,11 @@ Ubuntu 22.04 LTS <br/>
 ```
     ./run_program.bash
 ```
-또는<br/>
-make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
-단, 다음의 순서로 실행해야 한다.<br/>
+<br/>
+    또는<br/>
+    make 명령어 실행 후, 생성된 bin 폴더의 실행 파일들을 각각 실행한다.<br/>
+    단, 다음의 순서로 실행해야 한다.<br/>
+<br/>
 ```
     ./bin/broker_recovery
     ./bin/admin_logs
