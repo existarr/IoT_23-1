@@ -288,6 +288,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    printf("institution,location,room,timestamp,noise_level,decibel,health_status\n");
     // test case 
     for(int i=0; i<5; i++) {
         avg_decibel = cal_avg_decibel(true, i);
